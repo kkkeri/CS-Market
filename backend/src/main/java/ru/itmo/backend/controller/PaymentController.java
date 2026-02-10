@@ -2,8 +2,8 @@ package ru.itmo.backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.itmo.backend.dto.CreatePaymentOperationRequest;
-import ru.itmo.backend.dto.PaymentOperationDto;
+import ru.itmo.backend.dto.payment.CreatePaymentOperationRequest;
+import ru.itmo.backend.dto.payment.PaymentOperationDto;
 import ru.itmo.backend.service.PaymentService;
 
 import java.util.List;

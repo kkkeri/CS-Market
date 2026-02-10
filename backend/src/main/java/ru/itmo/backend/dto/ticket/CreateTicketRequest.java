@@ -1,6 +1,7 @@
-package ru.itmo.backend.dto;
+package ru.itmo.backend.dto.ticket;
 
 import lombok.Data;
+
 import java.util.List;
 
 @Data

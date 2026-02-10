@@ -2,8 +2,8 @@ package ru.itmo.backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.itmo.backend.dto.CreateTicketRequest;
-import ru.itmo.backend.dto.TicketDto;
+import ru.itmo.backend.dto.ticket.CreateTicketRequest;
+import ru.itmo.backend.dto.ticket.TicketDto;
 import ru.itmo.backend.service.SupportService;
 
 import java.util.List;
