@@ -64,15 +64,49 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentOperationDto updateStatus(Integer id, String status) {
+    public PaymentOperationDto updateStatus(Integer id, String statusRaw) {
         if (id == null || id <= 0) throw new BadRequestException("id must be > 0");
-        if (status == null || status.isBlank()) throw new BadRequestException("status is required");
+        if (statusRaw == null || statusRaw.isBlank()) throw new BadRequestException("status is required");
 
         PaymentOperation op = paymentOperationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("PaymentOperation not found: " + id));
 
-        op.setStatus(parseEnum(status, PaymentStatus.class, "status"));
-        return toDto(paymentOperationRepository.save(op));
+        PaymentStatus oldStatus = op.getStatus();
+        PaymentStatus newStatus = parseEnum(statusRaw, PaymentStatus.class, "status");
+
+        op.setStatus(newStatus);
+
+        // начисляем баланс ТОЛЬКО при переходе в SUCCESS
+        if (oldStatus != PaymentStatus.SUCCESS && newStatus == PaymentStatus.SUCCESS) {
+
+            User user = op.getUser();
+            if (user == null) throw new BadRequestException("PaymentOperation has no user");
+
+            PaymentOperationType type = op.getType();
+            if (type == null) throw new BadRequestException("PaymentOperation.type is required");
+
+            Integer amount = op.getAmount();
+            if (amount == null || amount <= 0) throw new BadRequestException("amount must be > 0");
+
+            Integer current = user.getBalance();
+            if (current == null) current = 0;
+
+            if (type == PaymentOperationType.DEPOSIT) {
+                user.setBalance(current + amount);
+                userRepository.save(user);
+
+            } else if (type == PaymentOperationType.WITHDRAW) {
+                if (current < amount) throw new BadRequestException("Insufficient funds for withdraw");
+                user.setBalance(current - amount);
+                userRepository.save(user);
+
+            } else {
+                throw new BadRequestException("Unsupported payment type: " + type);
+            }
+        }
+
+        PaymentOperation saved = paymentOperationRepository.save(op);
+        return toDto(saved);
     }
 
     @Transactional
